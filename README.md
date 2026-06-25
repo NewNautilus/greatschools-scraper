@@ -1,105 +1,92 @@
-[Greatschools Scraper](https://apify.com/fortuitous_pirate/greatschools-scraper?fpr=data)
+[Greatschools Scraper](https://apify.com/lulzasaur/greatschools-scraper?fpr=data)
 
-# GreatSchools K-12 Ratings Scraper
+# GreatSchools Scraper
 
-## Overview
+Scrape school ratings, demographics, and contact data from [GreatSchools.org](https://www.greatschools.org/) for any US city. Returns structured data including the 1-10 GreatSchools rating, enrollment, student-teacher ratio, test scores, reviews, phone numbers, and websites.
 
-Extract K-12 school ratings, test scores, and demographics from GreatSchools. org. Search 200,000+ schools by ZIP code, city, or address.
+## What data can you get?
 
-## Features
+| Field | Source | Details required? |
+| --- | --- | --- |
+| School name | Search | No |
+| GreatSchools rating (1-10) | Search | No |
+| Address, city, state, ZIP | Search | No |
+| School type (public/private/charter) | Search | No |
+| Grade range | Search | No |
+| Enrollment | Search | No |
+| Student-teacher ratio | Search | No |
+| District name | Search | No |
+| Test score sub-ratings | Search | No |
+| Parent rating & review count | Search | No |
+| Phone number | Detail | Yes |
+| Website | Detail | Yes |
 
-- Search by keywords to find specific results
-- Filter results by category or type
-- Export data in JSON, CSV, or Excel formats
-- Includes ratings and review data
-- Includes location and address data
-- Built-in proxy support for reliable data collection
+## Input
 
-## Use Cases
-
-- **Aggregate** - Aggregate academic papers and research data
-- **Build** - Build course catalogs and educational resource databases
-- **Track** - Track educational institution data and rankings
-- **Monitor** - Monitor academic publishing trends
-
-## Input Parameters
-
-| Parameter | Type | Description | Default |
+| Parameter | Type | Default | Description |
 | --- | --- | --- | --- |
-| `searchQueries` | array **(required)** | List of zip codes, cities, or addresses to search for schools. Example: ['902... | `[]` |
-| `schoolTypes` | array | Filter by school type. Leave empty for all types. | `[]` |
-| `gradeLevels` | array | Filter by grade level. Leave empty for all grades. | `[]` |
-| `maxResultsPerSearch` | integer | Maximum number of schools to return per search query. | `50` |
-| `includeDetails` | boolean | Fetch additional details for each school (slower but more data including subr... | true |
-| `proxyConfiguration` | object | Proxy settings for requests. Recommended for high volume scraping. | `{...}` |
+| `searchQueries` | string[] | `["Los Angeles, CA"]` | City/state to search. Use "City, ST" format. |
+| `maxListings` | integer | `50` | Max schools per query (1-1000). |
+| `scrapeDetails` | boolean | `false` | Fetch detail pages for phone/website. Slower. |
+| `schoolType` | string | `""` | Filter: `public`, `private`, `charter`, or blank for all. |
+| `proxyConfiguration` | object | - | Optional proxy settings. |
 
-## Output Example
-
-Each result contains structured data like this:
+### Example input
 
 ```
 {
-  "schoolId": "ABC-12345",
-  "name": "GreatSchools K-12 Ratings Sample Item",
-  "gsRating": 4.5,
-  "address": "123 Main St",
-  "schoolType": "Sample schoolType",
-  "levelCode": "Sample levelCode",
-  "gradeRange": "Sample gradeRange",
-  "districtName": "GreatSchools K-12 Ratings Sample Item",
-  "enrollment": "Sample enrollment",
-  "studentsPerTeacher": "Sample studentsPerTeacher",
-  "parentRating": 4.5,
-  "numReviews": 127
+    "searchQueries": ["Los Angeles, CA", "New York, NY"],
+    "maxListings": 100,
+    "scrapeDetails": true,
+    "schoolType": "public"
 }
 ```
 
-## Pricing
+## Output
 
-This actor uses pay-per-result pricing:
-
-- **$0.003** per result
-- **$3.00** per 1,000 results
-
-No monthly fees. You only pay for what you scrape. [Apify Free plan](https://apify.com/pricing) includes $5/month in platform credits.
-
-## How to Run
-
-### Apify Console
-
-1. Go to the [GreatSchools K-12 Ratings Scraper](https://apify.com/fortuitous_pirate/greatschools-scraper) actor page
-2. Configure your input parameters
-3. Click **Start** and wait for the results
-4. Download data in JSON, CSV, or Excel format
-
-### API
+Each result contains:
 
 ```
-curl -X POST "https://api.apify.com/v2/acts/fortuitous_pirate~greatschools-scraper/runs?token=YOUR_API_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{"maxItems": 10}'
+{
+    "schoolName": "L.A. County High School For The Arts",
+    "gsRating": 10,
+    "address": "5151 State University Drive",
+    "city": "Los Angeles",
+    "state": "CA",
+    "zip": "90032",
+    "schoolType": "public",
+    "gradeRange": "9-12",
+    "enrollment": 551,
+    "studentTeacherRatio": 27,
+    "district": "Los Angeles County Office Of Education School District",
+    "phone": "(323) 343-2550",
+    "website": "http://www.lachsa.net",
+    "testScores": {
+        "Test Scores Rating": 9,
+        "College Readiness Rating": 10
+    },
+    "reviews": 32,
+    "parentRating": 3.47,
+    "sourceUrl": "https://www.greatschools.org/california/los-angeles/10927-L.A.-County-High-School-For-The-Arts/",
+    "scrapedAt": "2026-04-26T12:00:00.000Z"
+}
 ```
 
-### Python SDK
+## Use cases
 
-```
-from apify_client import ApifyClient
+- **Real estate analysis** - Compare school quality across neighborhoods
+- **Education research** - Aggregate school metrics by district, city, or state
+- **Relocation planning** - Find top-rated schools in target cities
+- **Policy analysis** - Track school performance and demographics at scale
+- **Lead generation** - Build lists of schools with contact info
 
-client = ApifyClient("YOUR_API_TOKEN")
-run = client.actor("fortuitous_pirate/greatschools-scraper").call(
-    run_input={"maxItems": 10}
-)
+## Tips
 
-for item in client.dataset(run["defaultDatasetId"]).iterate_items():
-    print(item)
-```
+- Without `scrapeDetails`, the scraper runs fast using search-page JSON data.
+- Enable `scrapeDetails` when you need phone numbers and school websites.
+- GreatSchools shows 25 schools per page. Setting `maxListings: 1000` will fetch up to 40 pages.
+- Use the `schoolType` filter to narrow results before scraping.
 
-## Integration
+## Cost
 
-Connect GreatSchools K-12 Ratings Scraper with your existing tools and workflows:
-
-- **API access** - Programmatic access via [Apify API](https://docs.apify.com/api/v2)
-- **Webhooks** - Get notified when scraping completes
-- **Scheduling** - Set up recurring runs on any schedule
-- **Zapier / Make** - Connect with 5,000+ apps via [Apify integrations](https://apify.com/integrations)
-- **Python / Node.js SDKs** - Native client libraries for easy integration
+This actor uses pay-per-event pricing. You are charged per school result returned. Use `maxListings` to control costs.
